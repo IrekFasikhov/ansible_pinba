@@ -1,0 +1,55 @@
+---
+- include_vars: vars.yml
+- name: Installation packages for compilation
+  apt: name={{item}} state=present
+  with_items:
+        - git
+        - libncurses5-dev
+        - libprotobuf-dev
+        - libjemalloc-dev
+        - libjemalloc1
+        - libjudy-dev
+        - libjudydebian1
+        - protobuf-compiler 
+        - automake 
+        - autoconf 
+        - libprotobuf-dev
+        - libevent-dev
+        - libboost-all-dev
+        - cmake
+        - g++
+        - mysql-server-5.5
+        - mysql-server
+        - mysql-source-5.5
+        - bison
+        - mc
+        - vim
+        - libtool
+        - python-mysqldb
+
+- file: path={{source_dir}}/mysql-5.5 state=directory
+
+- name: Unarchive Myql Server
+  unarchive: src=/usr/src/mysql/mysql-source-5.5.tar.gz dest={{source_dir}}
+
+- name: Cmake compile Mysql
+  shell: "cd {{ source_dir }}/mysql-5.5 && cmake ."
+
+- name: git clone
+  git: repo=https://github.com/tony2001/pinba_engine.git dest={{source_dir}}/pinba_engine version=RELEASE_1_1_0
+
+- name: compile pinba
+  shell: "cd {{source_dir}}/pinba_engine/ && ./buildconf.sh && ./configure --with-mysql={{source_dir}}/mysql-5.5/ --libdir=/usr/lib/mysql/plugin && make -j4 install"
+ 
+- template: src=pinba.conf dest=/etc/mysql/conf.d
+- lineinfile: path /etc/mysql/my.cnf line="bind-address=0.0.0.0"
+
+- service: name=mysql state=started
+
+- name: Create database
+  mysql_db: name=pinba state=present
+
+- name: Import dump
+  mysql_db: state=import name=pinba target={{source_dir}}/pinba_engine/default_tables.sql
+
+- command: mysql -e "INSTALL PLUGIN pinba SONAME 'libpinba_engine.so'"

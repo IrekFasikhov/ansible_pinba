@@ -1,0 +1,6 @@
+---
+- hosts: PINDA
+  connection: local
+  roles:
+        - pinda
+ 

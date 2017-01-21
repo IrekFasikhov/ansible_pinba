@@ -1,0 +1,10 @@
+---
+    PORT: 30002
+    ADDRESS: 172.16.0.2
+    STATS_GATHERING_PERIOD: 10000
+    STATS_HISTORY: 900
+    TEMP_POOL_SIZE: 10000
+    REQUEST_POOL_SIZE: 100000
+    
+    #Каталоги для исходных кодов
+    source_dir : /usr/src/mysql/
